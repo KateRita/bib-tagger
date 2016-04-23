@@ -1,6 +1,9 @@
 import cv2
 
+import bodydetector as bt
+
 def findBibs(image):
-    print "Hello world"
+
+    bodyboxes = bt.getbodyboxes(image);
 
     return 1234
