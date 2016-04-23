@@ -3,6 +3,8 @@ import os
 import numpy as np
 
 def getbodyboxes(image):
+    #in: numpy image
+    #out: list [(x,y,width,height)]
 
     faces = findfaces(image)
 
@@ -66,12 +68,3 @@ def findbodies(image, faces):
         #cv2.rectangle(image, (x_body, y_body), (x_body+bodywidth, y_body+bodyheight), (0, 255, 0), 2)
 
     return bodies
-
-def drawboxes(image, faces):
-
-    # Draw a rectangle around the faces
-    for (x, y, w, h) in faces:
-        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-    cv2.imshow("Faces found", image)
-    cv2.waitKey(0)
