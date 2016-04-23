@@ -1,4 +1,3 @@
-import cv
 import cv2
 import numpy as np
 
@@ -55,8 +54,7 @@ def find_bibs(image):
   cv2.imwrite("binary.jpg", binary)
   contours,hierarchy = find_contours(binary)
 
-  print contours 
-  return get_corners(contours)
+  return get_rectangles(contours)
 
 def find_contours(image):
   #return cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE);
@@ -79,7 +77,7 @@ def find_lines(img):
   edges = cv2.Canny(img,100,200)
   threshold = 90
   minLineLength = 10
-  lines = cv2.HoughLinesP(edges, 1, cv.CV_PI/180, threshold, 0, minLineLength, 20);
+  lines = cv2.HoughLinesP(edges, 1, cv2.CV_PI/180, threshold, 0, minLineLength, 20);
   #print lines
   for line in lines[0]:
     print line
