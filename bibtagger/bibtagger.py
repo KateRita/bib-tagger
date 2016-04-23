@@ -2,6 +2,7 @@ import cv2
 import os
 import numpy as np
 import bodydetector as bt
+import find_bibs as bf
 
 def findBibs(image,outdir):
 
@@ -23,15 +24,23 @@ def findBibs(image,outdir):
     if(writefiles):
         cv2.imwrite(os.path.join(outdir,"bodyboxes.jpg"), imagecopy)
 
-    for i in np.arange(len(bodyboxes)):
-        #get subimage
-        subimage = getSubImage(image,bodyboxes[i])
+    # Creates a list of (sub_image, bib, bodybox) tuples
+    bibs = [(getSubImage(image,bodybox), bf.find_bib(getSubImage(image,bodybox)), bodybox)
+        for bodybox in bodyboxes]
 
-        #write out subimage
+    # Write out subimages
+    for i in np.arange(len(bibs)):
         if(writefiles):
-            cv2.imwrite(os.path.join(outdir,"subimage{}.jpg".format(i)), subimage)
+            cv2.drawContours(bibs[i][0], [bibs[i][1]], -1, (0,0,255), 2)
+            cv2.imwrite(os.path.join(outdir,"subimage{}.jpg".format(i)), bibs[i][0])
 
-    return 1234
+    # Return the bib corners back translated to the input image coordinate space
+    return [subimage_to_image(bib[2], bib[1]) for bib in bibs]
+
+def subimage_to_image(sub_image_box, contour):
+    x_delta = sub_image_box[0]
+    y_delta = sub_image_box[1]
+    return [(pt[0][0] + x_delta, pt[0][1] + y_delta) for pt in contour]
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)

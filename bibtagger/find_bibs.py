@@ -1,5 +1,6 @@
 import cv
 import cv2
+import numpy as np
 
 #
 # Takes an input image which is assumed to only have one bib and returns the
@@ -8,15 +9,21 @@ import cv2
 #
 def find_bib(image):
   edges = cv2.Canny(image,175,200)
+  #cv2.imwrite("edges.jpg", edges)
+
   contours,hierarchy = find_contours(edges)
+
+  #potential_contours = [c for c in contours if cv2.contourArea(cv2.approxPolyDP(c,0.02*cv2.arcLength(c,True),True)) > 300]
+  #cv2.drawContours(image,potential_contours,-1,(0,255,0), 2)
+
   rectangles = get_rectangles(contours)
 
   potential_bibs = [rect for rect in rectangles if is_potential_bib(rect)]
 
-  cv2.drawContours(image,potential_bibs,-1,(0,0,255), 2)
-  cv2.imwrite("with_potentials.jpg", image)
+  #cv2.drawContours(image,potential_bibs,-1,(0,0,255), 2)
+  #cv2.imwrite("with_potentials.jpg", image)
 
-  return potential_bibs[0]
+  return potential_bibs[0] if len(potential_bibs) > 0 else np.array([[(0,0)],[(0,0)],[(0,0)],[(0,0)]])
 
 #
 # Checks that the size and aspect ratio of the contour is appropriate for a bib.
@@ -24,7 +31,6 @@ def find_bib(image):
 def is_potential_bib(rect):
   x,y,w,h = cv2.boundingRect(rect)
   aspect_ratio = float(w) / float(h)
-  print w,h,aspect_ratio
   return (cv2.contourArea(rect) > 500 and
           aspect_ratio > 1 and
           aspect_ratio < 2)
@@ -49,6 +55,7 @@ def find_bibs(image):
   cv2.imwrite("binary.jpg", binary)
   contours,hierarchy = find_contours(binary)
 
+  print contours 
   return get_corners(contours)
 
 def find_contours(image):
@@ -97,7 +104,7 @@ def find_keypoints(img):
   cv2.imwrite('fast_true.png',img2)
 
 if __name__ == "__main__":
-  image_1 = cv2.imread("../photos/GloryDays/1.jpg")
+  image_1 = cv2.imread("../photos/GloryDays/3.jpg")
 
   #sample = cv2.imread("../photos/GloryDays/bib-sample.jpg")
   #orb = cv2.ORB();
@@ -111,7 +118,7 @@ if __name__ == "__main__":
   #cv2.imwrite("kp.jpg", sample_w_kp);
 
   bib = find_bib(image_1)
-  image_1 = cv2.imread("binary.jpg")
+  image_1 = cv2.imread("edges.jpg")
 
   x,y,w,h = cv2.boundingRect(bib)
   cv2.drawContours(image_1,[bib],-1,(0,0,255), 2)
