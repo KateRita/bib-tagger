@@ -3,9 +3,9 @@ import cv2
 
 import bibtagger.bibtagger as bt
 
-#read in photos
+#run it on one photo
 
-#for each photo
+#run it on all photos
 
 if __name__ == "__main__":
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         print "Extracting bibs."
         for idx,image in enumerate(img_list):
             #Do Operation
-            out_list = bt.findBibs(image)
+            out_list = bt.findBibs(image,os.path.join(outfolder,"{0}-{1}".format(racephoto_dir,img_namelist[idx])))
             print img_namelist[idx] , ":", out_list
 
         #make output directory
