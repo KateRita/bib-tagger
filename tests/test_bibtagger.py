@@ -11,7 +11,7 @@ class testbibtagger(unittest.TestCase):
     #called before every test
     def setUp(self):
         #self.widget = Widget('The widget')
-        self.basedir = os.path.dirname(os.path.abspath(os.curdir))
+        self.basedir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.photodir = os.path.join(self.basedir,"photos")
         self.photooutdir = os.path.join(self.basedir, "photos-out")
         print "setup"
