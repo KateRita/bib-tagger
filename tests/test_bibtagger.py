@@ -2,7 +2,6 @@ import unittest
 import os
 import cv2
 
-import bibtagger.bodydetector as bd
 import bibtagger.bibtagger as bt
 
 class testbibtagger(unittest.TestCase):
@@ -33,10 +32,10 @@ class testbibtagger(unittest.TestCase):
         #bd.getbodyboxes(image)
         bt.findBibs(image,os.path.join(self.photooutdir,"test_one_image"))
 
-    def test_nullImage(self):
+    #def test_nullImage(self):
         #self.assertEqual('foo'.upper(), 'FOO')
         #self.assertTrue('FOO'.isupper())
-        bt.findBibs(None)
+        #bt.findBibs(None,None)
 
 if __name__ == '__main__':
     unittest.main()

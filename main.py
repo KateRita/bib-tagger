@@ -3,10 +3,7 @@ import cv2
 
 import bibtagger.bibtagger as bt
 
-#run it on one photo
-
-#run it on all photos
-
+#runs the pipeline on all photos
 if __name__ == "__main__":
 
     sourcefolder = os.path.abspath(os.path.join(os.curdir, 'photos'))
