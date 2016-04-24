@@ -25,7 +25,7 @@ def findBibs(image,outdir):
     imagecopy = np.copy(image)
     drawboxes(imagecopy,bodyboxes)
     if(writefiles):
-        cv2.imwrite(os.path.join(outdir,"bodyboxes.jpg"), imagecopy)
+        cv2.imwrite(os.path.join(outdir,"0_0bodyboxes.jpg"), imagecopy)
 
     # Creates a list of (sub_image, bib, bodybox) tuples
     bibs = [(getSubImage(image,bodybox), bf.find_bib(getSubImage(image,bodybox)), bodybox)
@@ -35,7 +35,7 @@ def findBibs(image,outdir):
     for i in np.arange(len(bibs)):
         if(writefiles):
             cv2.drawContours(bibs[i][0], [bibs[i][1]], -1, (0,0,255), 2)
-            cv2.imwrite(os.path.join(outdir,"subimage{}.jpg".format(i)), bibs[i][0])
+            cv2.imwrite(os.path.join(outdir,"{}_1subimage.jpg".format(i)), bibs[i][0])
 
 
     # Return the bib corners back translated to the input image coordinate space
@@ -61,8 +61,11 @@ def findBibs(image,outdir):
         try :
             SWTbib = SWTScrubber.scrub(bibimage)
 
+            if(writefiles):
+                cv2.imwrite(os.path.join(outdir,"{}_2bibimage.jpg".format(i)),bibimage)
+
             if(writefiles and SWTbib != None):
-                SWTpath = os.path.join(outdir,"SWTimage{}.jpg".format(i))
+                SWTpath = os.path.join(outdir,"{}_3SWTimage.jpg".format(i))
                 cv2.imwrite(SWTpath,  SWTbib * 255)
                 SWTSuccess +=1
 
