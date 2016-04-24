@@ -48,7 +48,7 @@ def findBibs(image,outdir):
         bibcorner = bibcorners[i]
         subimage = bibs[i][0]
 
-        bibsquare = getsquare(bibcorner)
+        bibsquare = cv2.boundingRect(bibcorner)
 
         if bibsquare[2] == 0 and bibsquare[3]==0:
             #if it's null, we want original body image
@@ -77,25 +77,10 @@ def findBibs(image,outdir):
 
     return 1234
 
-def getsquare(fourcorners):
-    minx = fourcorners[0][0]
-    miny = fourcorners[0][1]
-    maxx = minx
-    maxy = miny
-
-    for (x,y) in fourcorners:
-        if x<minx : minx = x
-        if x>maxx : maxx = x
-        if y<miny : miny = y
-        if y>maxy : maxy = y
-
-    return (minx, miny, maxy- miny, maxx - minx)
-
-
 def subimage_to_image(sub_image_box, contour):
     x_delta = sub_image_box[0]
     y_delta = sub_image_box[1]
-    return [(pt[0][0] + x_delta, pt[0][1] + y_delta) for pt in contour]
+    return np.array([[(pt[0][0] + x_delta, pt[0][1] + y_delta)] for pt in contour])
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)
