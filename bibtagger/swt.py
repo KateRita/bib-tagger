@@ -33,6 +33,10 @@ class SWTScrubber(object):
         swt = cls._swt(theta, canny, sobelx, sobely)
         shapes = cls._connect_components(swt)
         swts, heights, widths, topleft_pts, images = cls._find_letters(swt, shapes)
+        if(len(swts)==0):
+            #didn't find any text, probably a bad face
+            return None
+
         word_images = cls._find_words(swts, heights, widths, topleft_pts, images)
 
         final_mask = np.zeros(swt.shape)
@@ -290,9 +294,11 @@ class SWTScrubber(object):
     @classmethod
     def _find_words(cls, swts, heights, widths, topleft_pts, images):
         # Find all shape pairs that have similar median stroke widths
-        print 'SWTS'
-        print swts
-        print 'DONESWTS'
+
+        #print 'SWTS'
+        #print swts
+        #print 'DONESWTS'
+
         swt_tree = scipy.spatial.KDTree(np.asarray(swts))
         stp = swt_tree.query_pairs(1)
 

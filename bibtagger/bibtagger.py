@@ -54,9 +54,13 @@ def findBibs(image,outdir):
             bibimage = getSubImage(image,bibsquare)
 
         print bibimage.shape
-        SWTbib = SWTScrubber.scrub(bibimage)
+        try :
+            SWTbib = None
+            SWTbib = SWTScrubber.scrub(bibimage)
+        except ValueError:
+            print "SWT failed"
 
-        if(writefiles):
+        if(writefiles and SWTbib != None):
             cv2.imwrite(os.path.join(outdir,"SWTimage{}.jpg".format(i)),  SWTbib * 255)
 
     return 1234
