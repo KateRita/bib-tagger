@@ -14,21 +14,17 @@ class testbibtagger(unittest.TestCase):
         self.basedir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.photodir = os.path.join(self.basedir,"photos")
         self.photooutdir = os.path.join(self.basedir, "photos-out")
-        print "setup"
+        print "Test Setup"
 
     def tearDown(self):
         #self.widget.dispose()
-        print "teardown"
+        print "Test Teardown"
 
     def test_findBibs(self):
-
-        print self.photodir
-
         #image = cv2.imread(os.path.join(self.photodir,"Frosty5k","1.jpg"))
         #image = cv2.imread(os.path.join(self.photodir,"abba.png"))
         image = cv2.imread(os.path.join(self.photodir,"GloryDays","4.jpg"))
 
-        print image.shape
         #bd.getbodyboxes(image)
         bt.findBibs(image,os.path.join(self.photooutdir,"test_one_image"))
 

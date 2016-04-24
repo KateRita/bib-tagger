@@ -19,7 +19,7 @@ def findBibs(image,outdir):
 
     bodyboxes = bt.getbodyboxes(image)
 
-    print "found {} bodies".format(len(bodyboxes))
+    print "Found {} bodies!".format(len(bodyboxes))
 
     #draw bodyboxes on image, and write out
     imagecopy = np.copy(image)
@@ -41,6 +41,9 @@ def findBibs(image,outdir):
     # Return the bib corners back translated to the input image coordinate space
     bibcorners = [subimage_to_image(bib[2], bib[1]) for bib in bibs]
 
+    bibsFound = 0
+    SWTSuccess = 0
+
     for i in np.arange(len(bibs)):
         bibcorner = bibcorners[i]
         subimage = bibs[i][0]
@@ -52,16 +55,22 @@ def findBibs(image,outdir):
             bibimage = subimage
         else:
             bibimage = getSubImage(image,bibsquare)
+            bibsFound += 1
 
-        print bibimage.shape
+        SWTbib = None
         try :
-            SWTbib = None
             SWTbib = SWTScrubber.scrub(bibimage)
+
+            if(writefiles and SWTbib != None):
+                SWTpath = os.path.join(outdir,"SWTimage{}.jpg".format(i))
+                cv2.imwrite(SWTpath,  SWTbib * 255)
+                SWTSuccess +=1
+
         except ValueError:
             print "SWT failed"
 
-        if(writefiles and SWTbib != None):
-            cv2.imwrite(os.path.join(outdir,"SWTimage{}.jpg".format(i)),  SWTbib * 255)
+
+    print "Result: {0} faces, {1} bibs, {2} SWT".format(len(bodyboxes),bibsFound,SWTSuccess)
 
     return 1234
 
