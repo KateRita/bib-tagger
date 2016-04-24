@@ -23,7 +23,7 @@ class testbibtagger(unittest.TestCase):
     def test_findBibs(self):
         #image = cv2.imread(os.path.join(self.photodir,"Frosty5k","1.jpg"))
         #image = cv2.imread(os.path.join(self.photodir,"abba.png"))
-        image = cv2.imread(os.path.join(self.photodir,"GloryDays","2.jpg"))
+        image = cv2.imread(os.path.join(self.photodir,"GloryDays","1.jpg"))
 
         #bd.getbodyboxes(image)
         bt.findBibs(image,os.path.join(self.photooutdir,"test_one_image"))

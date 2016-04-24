@@ -6,6 +6,7 @@ import find_bibs as bf
 
 from sys import maxint
 from swt import SWTScrubber
+import ocr
 
 def findBibs(image,outdir):
 
@@ -68,6 +69,8 @@ def findBibs(image,outdir):
                 SWTpath = os.path.join(outdir,"{}_3SWTimage.jpg".format(i))
                 cv2.imwrite(SWTpath,  SWTbib * 255)
                 SWTSuccess +=1
+
+                ocr.getOcr(SWTpath)
 
         except ValueError:
             print "SWT failed"
