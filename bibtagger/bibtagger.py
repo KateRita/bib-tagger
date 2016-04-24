@@ -31,8 +31,9 @@ def findBibs(image,outdir):
     # Write out subimages
     for i in np.arange(len(bibs)):
         if(writefiles):
-            cv2.drawContours(bibs[i][0], [bibs[i][1]], -1, (0,0,255), 2)
             cv2.imwrite(os.path.join(outdir,"subimage{}.jpg".format(i)), bibs[i][0])
+            cv2.drawContours(bibs[i][0], [bibs[i][1]], -1, (0,0,255), 2)
+            cv2.imwrite(os.path.join(outdir,"subimage_withbib{}.jpg".format(i)), bibs[i][0])
 
     # Return the bib corners back translated to the input image coordinate space
     return [subimage_to_image(bib[2], bib[1]) for bib in bibs]
@@ -50,8 +51,8 @@ def getSubImage(image,rectangle):
 
     return image[y:y+h,x:x+w,:]
 
-def drawboxes(image, boxes):
+def drawboxes(image, boxes, color = (0,255,0)):
 
     # Draw a rectangle around the faces
     for (x, y, w, h) in boxes:
-        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cv2.rectangle(image, (x, y), (x+w, y+h), color, 2)
