@@ -103,7 +103,12 @@ class SWTScrubber(object):
                                     ray.append((cur_x, cur_y))
                                     theta_point = theta[y, x]
                                     alpha = theta[cur_y, cur_x]
-                                    if math.acos(grad_x * -grad_x_g[cur_y, cur_x] + grad_y * -grad_y_g[cur_y, cur_x]) < np.pi/2.0:
+                                    val = grad_x * -grad_x_g[cur_y, cur_x] + grad_y * -grad_y_g[cur_y, cur_x]
+                                    if (val < -1.0):
+                                        val = -1.0
+                                    if (val > 1.0):
+                                        val = 1.0
+                                    if math.acos(val) < np.pi/2.0:
                                         thickness = math.sqrt( (cur_x - x) * (cur_x - x) + (cur_y - y) * (cur_y - y) )
                                         for (rp_x, rp_y) in ray:
                                             swt[rp_y, rp_x] = min(thickness, swt[rp_y, rp_x])
