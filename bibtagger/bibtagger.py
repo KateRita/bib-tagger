@@ -4,6 +4,9 @@ import numpy as np
 import bodydetector as bt
 import find_bibs as bf
 
+from sys import maxint
+from swt import SWTScrubber
+
 def findBibs(image,outdir):
 
     #prep out dir
@@ -16,32 +19,68 @@ def findBibs(image,outdir):
 
     bodyboxes = bt.getbodyboxes(image)
 
-    print "found {} bodies".format(len(bodyboxes))
+    print "Found {} bodies!".format(len(bodyboxes))
 
     #draw bodyboxes on image, and write out
     imagecopy = np.copy(image)
     drawboxes(imagecopy,bodyboxes)
     if(writefiles):
-        cv2.imwrite(os.path.join(outdir,"bodyboxes.jpg"), imagecopy)
+        cv2.imwrite(os.path.join(outdir,"0_0bodyboxes.jpg"), imagecopy)
 
     # Creates a list of (sub_image, bib, bodybox) tuples
     bibs = [(getSubImage(image,bodybox), bf.find_bib(getSubImage(image,bodybox)), bodybox)
         for bodybox in bodyboxes]
 
-    # Write out subimages
+    # Write out subimages, with bibs outlined
     for i in np.arange(len(bibs)):
         if(writefiles):
-            cv2.imwrite(os.path.join(outdir,"subimage{}.jpg".format(i)), bibs[i][0])
+            cv2.imwrite(os.path.join(outdir,"{}_1subimage.jpg".format(i)), bibs[i][0])
             cv2.drawContours(bibs[i][0], [bibs[i][1]], -1, (0,0,255), 2)
-            cv2.imwrite(os.path.join(outdir,"subimage_withbib{}.jpg".format(i)), bibs[i][0])
+            cv2.imwrite(os.path.join(outdir,"{}_1subimage_withbib.jpg".format(i)), bibs[i][0])
 
     # Return the bib corners back translated to the input image coordinate space
-    return [subimage_to_image(bib[2], bib[1]) for bib in bibs]
+    bibcorners = [subimage_to_image(bib[2], bib[1]) for bib in bibs]
+
+    bibsFound = 0
+    SWTSuccess = 0
+
+    for i in np.arange(len(bibs)):
+        bibcorner = bibcorners[i]
+        subimage = bibs[i][0]
+
+        bibsquare = cv2.boundingRect(bibcorner)
+
+        if bibsquare[2] == 0 and bibsquare[3]==0:
+            #if it's null, we want original body image
+            bibimage = subimage
+        else:
+            bibimage = getSubImage(image,bibsquare)
+            bibsFound += 1
+
+        SWTbib = None
+        try :
+            SWTbib = SWTScrubber.scrub(bibimage)
+
+            if(writefiles):
+                cv2.imwrite(os.path.join(outdir,"{}_2bibimage.jpg".format(i)),bibimage)
+
+            if(writefiles and SWTbib != None):
+                SWTpath = os.path.join(outdir,"{}_3SWTimage.jpg".format(i))
+                cv2.imwrite(SWTpath,  SWTbib * 255)
+                SWTSuccess +=1
+
+        except ValueError:
+            print "SWT failed"
+
+
+    print "Result: {0} faces, {1} bibs, {2} SWT".format(len(bodyboxes),bibsFound,SWTSuccess)
+
+    return 1234
 
 def subimage_to_image(sub_image_box, contour):
     x_delta = sub_image_box[0]
     y_delta = sub_image_box[1]
-    return [(pt[0][0] + x_delta, pt[0][1] + y_delta) for pt in contour]
+    return np.array([[(pt[0][0] + x_delta, pt[0][1] + y_delta)] for pt in contour])
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)

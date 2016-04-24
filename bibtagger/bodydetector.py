@@ -24,9 +24,6 @@ def findfaces(image):
     #cascPath = os.path.join(haarcascadeFolder, "haarcascade_fullbody.xml")
     #cascPath = os.path.join(haarcascadeFolder, "haarcascade_russian_plate_number.xml")
 
-    print cascPath
-    print os.path.isfile(cascPath)
-
     # Create the haar cascade
     faceCascade = cv2.CascadeClassifier(cascPath)
 
@@ -45,8 +42,6 @@ def findfaces(image):
         minNeighbors=5,
         minSize=(30, 30),
     )
-
-    print "Found {0} faces!".format(len(faces))
 
     return [scale_rect(face, 1/scale) for face in faces]
 
