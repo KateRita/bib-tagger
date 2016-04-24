@@ -331,8 +331,10 @@ class SWTScrubber(object):
                 pairs.append(pair)
                 pair_angles.append(np.asarray([angle]))
 
-        angle_tree = scipy.spatial.KDTree(np.asarray(pair_angles))
-        atp = angle_tree.query_pairs(np.pi/12)
+        atp = []
+        if len(pair_angles) > 0:
+            angle_tree = scipy.spatial.KDTree(np.asarray(pair_angles))
+            atp = angle_tree.query_pairs(np.pi/12)
 
         for pair_idx in atp:
             pair_a = pairs[pair_idx[0]]
@@ -365,7 +367,7 @@ class SWTScrubber(object):
                 chains.append(set([left_b, right_b]))
 
         word_images = []
-        for chain in [c for c in chains if len(c) > 3]:
+        for chain in [c for c in chains if len(c) > 2]:
             for idx in chain:
                 word_images.append(images[idx])
                 # cv2.imwrite('keeper'+ str(idx) +'.jpg', images[idx] * 255)
