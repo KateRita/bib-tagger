@@ -32,6 +32,8 @@ if __name__ == "__main__":
                 img_list.append(cv2.imread(os.path.join(sourcefolder, racephoto_dir, filename)))
                 img_namelist.append((racephoto_dir,filename))
 
+        bibsfound = 0
+
         print "Extracting bibs."
         for idx,image in enumerate(img_list):
             #Do Operation
@@ -40,6 +42,12 @@ if __name__ == "__main__":
             out_list = bt.findBibs(image,os.path.join(outfolder,img_namelist[idx][0],img_namelist[idx][1]))
             print "bibs found: ", img_namelist[idx] , ":", out_list
 
+            bibsfound += len(out_list)
+
+        print "======================================="
+        print "FINAL STATS"
+
+        print "TOTAL BIBS FOUND: ", bibsfound
         #make output directory
         #print "writing output to {}".format(os.path.join(outfolder, racephoto_dir))
         #if not os.path.exists(os.path.join(outfolder, racephoto_dir)):
