@@ -44,26 +44,48 @@ def findBibs(image,outdir):
         SWTbib = None
         try :
             bibimage = bib.smallest_subimage_containing_bib()
+
+            height, width, depth = bibimage.shape
+            best_width=256.0
+            scale = best_width / width
+            bibimage = cv2.resize(bibimage, None, fx=scale, fy=scale)
+            #bibimage = cv2.cvtColor(bibimage, cv2.COLOR_BGR2GRAY);
+            #blurred = cv2.GaussianBlur(bibimage,(5,5),0)
+            #bibimage = cv2.equalizeHist(bibimage)
+            #ret,bibimage = cv2.threshold(blurred, 190, 255, cv2.THRESH_BINARY);
+            #bibimage = cv2.cvtColor(bibimage, cv2.COLOR_GRAY2BGR);
+            #bibimage = cv2.fastNlMeansDenoisingColored(bibimage,None,10,10,7,21)
             if(writefiles):
                 cv2.imwrite(os.path.join(outdir,"{}_2bibimage.jpg".format(i)),bibimage)
 
             SWTbib = SWTScrubber.scrub(bibimage)
             if(writefiles and SWTbib is not None):
                 SWTpath = os.path.join(outdir,"{}_3SWTimage.jpg".format(i))
-                cv2.imwrite(SWTpath,  SWTbib * 255)
+                cv2.imwrite(SWTpath, 255*SWTbib)
                 bib.number = ocr.getOcr(SWTpath)
+
+            if not bib.has_bib_number():
+                bibimage_inverted = (255-bibimage)
+                if(writefiles):
+                    cv2.imwrite(os.path.join(outdir,"{}_2bibimage_inverted.jpg".format(i)),bibimage_inverted)
+
+                SWTbib = SWTScrubber.scrub(bibimage_inverted)
+                if(writefiles and SWTbib is not None):
+                    SWTpath = os.path.join(outdir,"{}_3SWTimage_inverted.jpg".format(i))
+                    cv2.imwrite(SWTpath, 255*SWTbib)
+                    bib.number = ocr.getOcr(SWTpath)
 
             #found some words in this image
             if (SWTbib is not None):
                 SWTSuccess += 1
 
-        except ValueError:
+        except Bib:
             print "SWT failed"
 
     bibs_found = sum(1 for bib in bibs if bib.bib_found)
-    bib_numbers_found = sum(1 for bib in bibs if bib.number is not None and bib.number != '')
+    bib_numbers_found = sum(1 for bib in bibs if bib.has_bib_number())
     print "Result: {0} faces, {1} bibs, {2} SWT, {3} bib numbers".format(len(bodyboxes),bibs_found,SWTSuccess, bib_numbers_found)
-    return [ bib.number for bib in bibs if bib.number != None and bib.number != '' ]
+    return [ bib.number for bib in bibs if bib.has_bib_number() ]
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)

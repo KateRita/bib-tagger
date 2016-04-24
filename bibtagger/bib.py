@@ -12,6 +12,9 @@ class Bib(object):
         self.bib_found = (w != 0 and h != 0)
         self.number = None
 
+    def has_bib_number(self):
+        return self.number != None and self.number != ''
+
     def body_image(self):
         return bt.getSubImage(self.image, self.bodybox)
 
