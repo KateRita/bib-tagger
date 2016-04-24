@@ -1,45 +1,64 @@
 import cv2
 import numpy as np
 
-DEBUG=True
+DEBUG=False
 
 #
 # Takes an input image which is assumed to only have one bib and returns the
 # four corners of the bib in the form of an opencv contour (vector of points,
-# i.e vector((x1,y1),(x2,y2),(x3,y3)(x4,y4)) )
+# i.e vector((x1,y1),(x2,y2),(x3,y3),(x4,y4)) )
 #
 def find_bib(image):
+  width, height, depth = image.shape
 
   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
+  #gray = cv2.equalizeHist(gray)
   blurred = cv2.GaussianBlur(gray,(5,5),0)
+
+  debug_output("find_bib_blurred", blurred)
+  #binary = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, blockSize=25, C=0);
   ret,binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU);
+  #ret,binary = cv2.threshold(blurred, 170, 255, cv2.THRESH_BINARY);
+  debug_output("find_bib_binary", binary)
   threshold_contours,hierarchy = find_contours(binary)
 
   debug_output("find_bib_threshold", binary)
 
-  edges = cv2.Canny(image,175,200, 3)
+  edges = cv2.Canny(gray,175,200, 3)
   edge_contours,hierarchy = find_contours(edges)
 
   debug_output("find_bib_edges", edges)
 
   contours = threshold_contours + edge_contours
+  debug_output_contours("find_bib_threshold_contours", image, contours)
 
   rectangles = get_rectangles(contours)
-  potential_bibs = [rect for rect in rectangles if is_potential_bib(rect)]
+
+  debug_output_contours("find_bib_rectangles", image, rectangles)
+
+  potential_bibs = [rect for rect in rectangles if is_potential_bib(rect, width*height)]
 
   debug_output_contours("find_bib_potential_bibs", image, potential_bibs)
+
+  ideal_aspect_ratio = 1.0
+  potential_bibs = sorted(potential_bibs, key = lambda bib: abs(aspect_ratio(bib) - ideal_aspect_ratio))
 
   return potential_bibs[0] if len(potential_bibs) > 0 else np.array([[(0,0)],[(0,0)],[(0,0)],[(0,0)]])
 
 #
 # Checks that the size and aspect ratio of the contour is appropriate for a bib.
 #
-def is_potential_bib(rect):
-  x,y,w,h = cv2.boundingRect(rect)
-  aspect_ratio = float(w) / float(h)
-  return (cv2.contourArea(rect) > 300 and
-          aspect_ratio > 0.75 and
-          aspect_ratio < 2.5)
+def is_potential_bib(rect, image_area):
+  min_bib_size = image_area / 12;
+  max_bib_size = image_area / 4;
+  return (cv2.contourArea(rect) > min_bib_size and
+          cv2.contourArea(rect) < max_bib_size and
+          aspect_ratio(rect) > 0.75 and
+          aspect_ratio(rect) < 2.5)
+
+def aspect_ratio(rect):
+  (x,y),(w,h),theta = cv2.minAreaRect(rect)
+  return float(w) / float(h)
 
 def find_bibs(image):
   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
@@ -71,7 +90,7 @@ def find_contours(image):
 def get_rectangles(contours):
   rectangles = []
   for contour in contours:
-    epsilon = 0.02*cv2.arcLength(contour,True)
+    epsilon = 0.04*cv2.arcLength(contour,True)
     hull = cv2.convexHull(contour)
     approx = cv2.approxPolyDP(hull,epsilon,True)
     if (len(approx) == 4 and cv2.isContourConvex(approx)):
@@ -148,19 +167,17 @@ def find_keypoints(img):
   cv2.imwrite('fast_true.png',img2)
 
 def debug_output_contours(name, img, contours):
-  if (DEBUG):
-    tmp_img = np.copy(img)
-    cv2.drawContours(tmp_img,contours,-1,(0,0,255), 2)
-    debug_output(name, tmp_img)
-
-
+    if (DEBUG):
+        tmp_img = np.copy(img)
+        cv2.drawContours(tmp_img,contours,-1,(0,0,255), 2)
+        debug_output(name, tmp_img)
 
 def debug_output(name, img):
     if (DEBUG):
         cv2.imwrite(name + '.jpg', img)
 
 if __name__ == "__main__":
-  image_1 = cv2.imread("../photos/GloryDays/3.jpg")
+  image_1 = cv2.imread("../photos-out/Frosty5k-1.jpg/subimage0.jpg")
 
   #sample = cv2.imread("../photos/GloryDays/bib-sample.jpg")
   #orb = cv2.ORB();
@@ -174,11 +191,9 @@ if __name__ == "__main__":
   #cv2.imwrite("kp.jpg", sample_w_kp);
 
   bib = find_bib(image_1)
-  image_1 = cv2.imread("edges.jpg")
 
-  x,y,w,h = cv2.boundingRect(bib)
   cv2.drawContours(image_1,[bib],-1,(0,0,255), 2)
+  x,y,w,h = cv2.boundingRect(bib)
   cv2.rectangle(image_1,(x,y),(x+w,y+h),(0,255,0),2)
-
   cv2.imwrite("out.jpg", image_1)
 
