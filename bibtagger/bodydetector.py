@@ -10,8 +10,6 @@ def getbodyboxes(image):
 
     bodyrectangles = findbodies(image,faces)
 
-    #drawboxes(image,bodies)
-
     return bodyrectangles
 
 
@@ -33,21 +31,27 @@ def findfaces(image):
     faceCascade = cv2.CascadeClassifier(cascPath)
 
     # Read the image
+    height, width, depth = image.shape
+    scale = 1
+    if (width > 1024):
+        scale = 1024.0/width
+        image = cv2.resize(image, None, fx=scale, fy=scale)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Detect faces in the image
     faces = faceCascade.detectMultiScale(
         gray,
-        scaleFactor=1.1,
+        scaleFactor=1.05,
         minNeighbors=5,
         minSize=(30, 30),
-        flags = cv2.cv.CV_HAAR_SCALE_IMAGE
     )
 
     print "Found {0} faces!".format(len(faces))
 
-    #return list of boxes
-    return faces
+    return [scale_rect(face, 1/scale) for face in faces]
+
+def scale_rect(rect, scale):
+    return [int(value*scale) for value in rect]
 
 def findbodies(image, faces):
 
