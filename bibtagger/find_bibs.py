@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+DEBUG=True
+
 #
 # Takes an input image which is assumed to only have one bib and returns the
 # four corners of the bib in the form of an opencv contour (vector of points,
@@ -11,17 +13,24 @@ def find_bib(image):
   edges = cv2.Canny(image,175,200)
   #cv2.imwrite("edges.jpg", edges)
 
-  contours,hierarchy = find_contours(edges)
+  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
+  blurred = cv2.GaussianBlur(gray,(5,5),0)
+  ret,binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU);
+  threshold_contours,hierarchy = find_contours(binary)
 
-  #potential_contours = [c for c in contours if cv2.contourArea(cv2.approxPolyDP(c,0.02*cv2.arcLength(c,True),True)) > 300]
-  #cv2.drawContours(image,potential_contours,-1,(0,255,0), 2)
+  debug_output("find_bib_threshold", binary)
+
+  edges = cv2.Canny(image,175,200, 3)
+  edge_contours,hierarchy = find_contours(edges)
+
+  debug_output("find_bib_edges", edges)
+
+  contours = threshold_contours + edge_contours
 
   rectangles = get_rectangles(contours)
-
   potential_bibs = [rect for rect in rectangles if is_potential_bib(rect)]
 
-  #cv2.drawContours(image,potential_bibs,-1,(0,0,255), 2)
-  #cv2.imwrite("with_potentials.jpg", image)
+  debug_output_contours("find_bib_potential_bibs", image, potential_bibs)
 
   return potential_bibs[0] if len(potential_bibs) > 0 else np.array([[(0,0)],[(0,0)],[(0,0)],[(0,0)]])
 
@@ -31,9 +40,9 @@ def find_bib(image):
 def is_potential_bib(rect):
   x,y,w,h = cv2.boundingRect(rect)
   aspect_ratio = float(w) / float(h)
-  return (cv2.contourArea(rect) > 500 and
-          aspect_ratio > 1 and
-          aspect_ratio < 2)
+  return (cv2.contourArea(rect) > 300 and
+          aspect_ratio > 0.75 and
+          aspect_ratio < 2.5)
 
 def find_bibs(image):
   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
@@ -63,28 +72,67 @@ def find_contours(image):
   return cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE);
 
 def get_rectangles(contours):
-  #remove_contours(contours, 100, 5000);
   rectangles = []
   for contour in contours:
     epsilon = 0.02*cv2.arcLength(contour,True)
     hull = cv2.convexHull(contour)
     approx = cv2.approxPolyDP(hull,epsilon,True)
     if (len(approx) == 4 and cv2.isContourConvex(approx)):
-      rectangles.append(approx)
+        rectangles.append(approx)
 
   return rectangles
 
 def find_lines(img):
   edges = cv2.Canny(img,100,200)
-  threshold = 90
+  threshold = 60
   minLineLength = 10
-  lines = cv2.HoughLinesP(edges, 1, cv2.CV_PI/180, threshold, 0, minLineLength, 20);
+  lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold, 0, minLineLength, 20);
+  if (lines is None or len(lines) == 0):
+      return
+
   #print lines
   for line in lines[0]:
-    print line
+    #print line
     cv2.line(img, (line[0],line[1]), (line[2],line[3]), (0,255,0), 2)
   cv2.imwrite("line_edges.jpg", edges)
   cv2.imwrite("lines.jpg", img)
+
+def find_blobs(img):
+    # Setup SimpleBlobDetector parameters.
+    params = cv2.SimpleBlobDetector_Params()
+     
+    # Change thresholds
+    params.minThreshold = 100;
+    params.maxThreshold = 5000;
+     
+    # Filter by Area.
+    params.filterByArea = True
+    params.minArea = 200
+     
+    # Filter by Circularity
+    params.filterByCircularity = False
+    params.minCircularity = 0.785
+     
+    # Filter by Convexity
+    params.filterByConvexity = False
+    params.minConvexity = 0.87
+     
+    # Filter by Inertia
+    #params.filterByInertia = True
+    #params.minInertiaRatio = 0.01
+
+    # Set up the detector with default parameters.
+    detector = cv2.SimpleBlobDetector(params)
+     
+    # Detect blobs.
+    keypoints = detector.detect(img)
+    print keypoints
+      
+    # Draw detected blobs as red circles.
+    # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
+    im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]),
+            (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    cv2.imwrite("blobs.jpg", im_with_keypoints);
 
 def find_keypoints(img):
   # Initiate FAST object with default values
@@ -101,6 +149,18 @@ def find_keypoints(img):
   print "Total Keypoints with nonmaxSuppression: ", len(kp)
 
   cv2.imwrite('fast_true.png',img2)
+
+def debug_output_contours(name, img, contours):
+  if (DEBUG):
+    tmp_img = np.copy(img)
+    cv2.drawContours(tmp_img,contours,-1,(0,0,255), 2)
+    debug_output(name, tmp_img)
+
+
+
+def debug_output(name, img):
+    if (DEBUG):
+        cv2.imwrite(name + '.jpg', img)
 
 if __name__ == "__main__":
   image_1 = cv2.imread("../photos/GloryDays/3.jpg")
