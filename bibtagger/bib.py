@@ -9,7 +9,7 @@ class Bib(object):
         self.bodybox = bodybox
         self.corners = bf.find_bib(self.body_image())
         x,y,w,h = cv2.boundingRect(self.corners)
-        self.bib_found = (w != 0 and h != 0)
+        self.bib_found = (x != 0 and y != 0 and w != 1 and h != 1)
         self.number = None
 
     def has_bib_number(self):
