@@ -19,6 +19,7 @@ if __name__ == "__main__":
     exts = ['.bmp', '.pbm', '.pgm', '.ppm', '.sr', '.ras', '.jpeg', '.jpg',
             '.jpe', '.jp2', '.tiff', '.tif', '.png']
 
+    results = []
   # For every image in the source directory
     for racephoto_dir in os.listdir(sourcefolder):
         print "Collecting images from directory {}".format(racephoto_dir)
@@ -32,22 +33,22 @@ if __name__ == "__main__":
                 img_list.append(cv2.imread(os.path.join(sourcefolder, racephoto_dir, filename)))
                 img_namelist.append((racephoto_dir,filename))
 
-        bibsfound = 0
 
         print "Extracting bibs."
         for idx,image in enumerate(img_list):
             #Do Operation
             print "======================================="
             print "Processing Image: ", img_namelist[idx]
-            out_list = bt.findBibs(image,os.path.join(outfolder,img_namelist[idx][0],img_namelist[idx][1]))
-            print "bibs found: ", img_namelist[idx] , ":", out_list
+            results.append(bt.findBibs(image,os.path.join(outfolder,img_namelist[idx][0],img_namelist[idx][1])))
 
-            bibsfound += len(out_list)
 
-        print "======================================="
-        print "FINAL STATS"
+    print "======================================="
+    print "FINAL STATS"
+    print "Faces:", sum(result.faces for result in results )
+    print "Bibs:", sum(result.bibs for result in results )
+    print "SWT:", sum(result.swt for result in results )
+    print "Bib Numbers:", sum(len(result.bib_numbers) for result in results )
 
-        print "TOTAL BIBS FOUND: ", bibsfound
         #make output directory
         #print "writing output to {}".format(os.path.join(outfolder, racephoto_dir))
         #if not os.path.exists(os.path.join(outfolder, racephoto_dir)):

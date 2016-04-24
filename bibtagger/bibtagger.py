@@ -4,6 +4,7 @@ import numpy as np
 import bodydetector as bt
 import find_bibs as bf
 from bib import Bib
+from bibtaggerresult import BibTaggerResult
 
 from swt import SWTScrubber
 import ocr
@@ -37,8 +38,8 @@ def findBibs(image,outdir):
             cv2.imwrite(os.path.join(outdir,"{}_1subimage.jpg".format(i)), bib.body_image())
             cv2.imwrite(os.path.join(outdir,"{}_1subimage_withbib.jpg".format(i)), bib.body_image_with_bib())
 
-    SWTSuccess = 0
 
+    swtsuccesses = 0
     for i, bib in enumerate(bibs):
 
         SWTbib = None
@@ -55,15 +56,20 @@ def findBibs(image,outdir):
 
             #found some words in this image
             if (SWTbib is not None):
-                SWTSuccess += 1
+                swtsuccesses += 1
 
         except ValueError:
             print "SWT failed"
 
-    bibs_found = sum(1 for bib in bibs if bib.bib_found)
-    bib_numbers_found = sum(1 for bib in bibs if bib.number is not None and bib.number != '')
-    print "Result: {0} faces, {1} bibs, {2} SWT, {3} bib numbers".format(len(bodyboxes),bibs_found,SWTSuccess, bib_numbers_found)
-    return [ bib.number for bib in bibs if bib.number != None and bib.number != '' ]
+    result = BibTaggerResult()
+    result.faces = len(bodyboxes)
+    result.bibs = sum(1 for bib in bibs if bib.bib_found)
+    result.swt = swtsuccesses
+    result.bib_numbers = [ bib.number for bib in bibs if bib.number != None and bib.number != '' ]
+
+    print result
+
+    return result
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)
