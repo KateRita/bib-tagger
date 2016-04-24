@@ -32,6 +32,21 @@ class testbibtagger(unittest.TestCase):
         #bd.getbodyboxes(image)
         bt.findBibs(image,os.path.join(self.photooutdir,"test_one_image"))
 
+    def test_getsquare(self):
+        corners = [(320, 353), (259, 359), (255, 308), (318, 303)]
+        print corners
+        square = bt.getsquare(corners)
+
+        print square
+
+        assert (square == (255,303,56,65))
+
+    def test_getsquare_empty(self):
+        corners = [(0, 0), (0, 0), (0, 0), (0, 0)]
+
+        square = bt.getsquare(corners)
+        assert (square == (0,0,0,0))
+
     #def test_nullImage(self):
         #self.assertEqual('foo'.upper(), 'FOO')
         #self.assertTrue('FOO'.isupper())
