@@ -1,5 +1,6 @@
 import os
 import cv2
+import pprint
 
 import bibtagger.bibtagger as bt
 
@@ -19,6 +20,7 @@ if __name__ == "__main__":
     exts = ['.bmp', '.pbm', '.pgm', '.ppm', '.sr', '.ras', '.jpeg', '.jpg',
             '.jpe', '.jp2', '.tiff', '.tif', '.png']
 
+    bib_index = {}
     results = []
   # For every image in the source directory
     for racephoto_dir in os.listdir(sourcefolder):
@@ -41,6 +43,11 @@ if __name__ == "__main__":
             print "Processing Image: ", img_namelist[idx]
             results.append(bt.findBibs(image,os.path.join(outfolder,img_namelist[idx][0],img_namelist[idx][1])))
 
+            for bib_number in results[len(results) - 1].bib_numbers:
+                if bib_number not in bib_index:
+                    bib_index[bib_number] = []
+                bib_index[bib_number].append(img_namelist[idx])
+
 
     print "======================================="
     print "FINAL STATS"
@@ -48,6 +55,7 @@ if __name__ == "__main__":
     print "Bibs:", sum(result.bibs for result in results )
     print "SWT:", sum(result.swt for result in results )
     print "Bib Numbers:", sum(len(result.bib_numbers) for result in results )
+    pprint.pprint(("Bib Index: ", bib_index), width=1)
 
         #make output directory
         #print "writing output to {}".format(os.path.join(outfolder, racephoto_dir))
