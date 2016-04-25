@@ -99,7 +99,7 @@ class SWTScrubber(object):
                             # we have moved to the next pixel!
                             try:
                                 # Detect if we have just "stepped through" a line on the diagonal
-                                if (cur_x != prev_x and cur_y != prev_y):
+                                if (prev_x != x and prev_y != y and cur_x != prev_x and cur_y != prev_y):
                                     if edges[cur_y, prev_x] > 0 and edges[prev_y, cur_x] > 0:
                                         break
 
