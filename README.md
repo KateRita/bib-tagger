@@ -16,6 +16,7 @@ Probably could stand to clean these up a bit, do we need all of these?
 *Numpy
 *pytesseract
 **tesseract-ocr
+*Pillow
 
 ## Usage
 
