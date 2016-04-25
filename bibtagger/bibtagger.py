@@ -8,6 +8,7 @@ from bibtaggerresult import BibTaggerResult
 
 from swt import SWTScrubber
 import ocr
+import re
 
 def findBibs(image,outdir):
 
@@ -47,34 +48,24 @@ def findBibs(image,outdir):
             bibimage = bib.smallest_subimage_containing_bib()
 
             height, width, depth = bibimage.shape
-            best_width=256.0
+            best_width=376.0
             scale = best_width / width
-            bibimage = cv2.resize(bibimage, None, fx=scale, fy=scale)
-            #bibimage = cv2.cvtColor(bibimage, cv2.COLOR_BGR2GRAY);
-            #blurred = cv2.GaussianBlur(bibimage,(5,5),0)
-            #bibimage = cv2.equalizeHist(bibimage)
-            #ret,bibimage = cv2.threshold(blurred, 190, 255, cv2.THRESH_BINARY);
-            #bibimage = cv2.cvtColor(bibimage, cv2.COLOR_GRAY2BGR);
-            #bibimage = cv2.fastNlMeansDenoisingColored(bibimage,None,10,10,7,21)
-            if(writefiles):
-                cv2.imwrite(os.path.join(outdir,"{}_2bibimage.jpg".format(i)),bibimage)
 
-            SWTbib = SWTScrubber.scrub(bibimage)
-            if(writefiles and SWTbib is not None):
-                SWTpath = os.path.join(outdir,"{}_3SWTimage.jpg".format(i))
-                cv2.imwrite(SWTpath, 255*SWTbib)
-                bib.number = ocr.getOcr(SWTpath)
+            bibimage = cv2.resize(bibimage, None, fx=scale, fy=scale)
+            bib.number = run_swt_and_ocr(bibimage, i, "normal", writefiles, outdir)
 
             if not bib.has_bib_number():
                 bibimage_inverted = (255-bibimage)
-                if(writefiles):
-                    cv2.imwrite(os.path.join(outdir,"{}_2bibimage_inverted.jpg".format(i)),bibimage_inverted)
+                bib.number = run_swt_and_ocr(bibimage_inverted, i, "inverted", writefiles, outdir)
 
-                SWTbib = SWTScrubber.scrub(bibimage_inverted)
-                if(writefiles and SWTbib is not None):
-                    SWTpath = os.path.join(outdir,"{}_3SWTimage_inverted.jpg".format(i))
-                    cv2.imwrite(SWTpath, 255*SWTbib)
-                    bib.number = ocr.getOcr(SWTpath)
+            if not bib.has_bib_number():
+                bibimage = cv2.cvtColor(bibimage_inverted, cv2.COLOR_BGR2GRAY);
+                bibimage = cv2.GaussianBlur(bibimage,(5,5),0)
+                bibimage = cv2.equalizeHist(bibimage)
+                ret,bibimage = cv2.threshold(bibimage, 75, 255, cv2.THRESH_BINARY);
+                bibimage = cv2.cvtColor(bibimage, cv2.COLOR_GRAY2BGR);
+                bibimage = cv2.fastNlMeansDenoisingColored(bibimage,None,10,10,7,21)
+                bib.number = run_swt_and_ocr(bibimage, i, "inverted_and_normalized", writefiles, outdir)
 
             #found some words in this image
             if (SWTbib is not None):
@@ -92,6 +83,23 @@ def findBibs(image,outdir):
     print result
 
     return result
+
+
+def run_swt_and_ocr(image, i, name, writefiles, outdir):
+    bib_number = None
+
+    if(writefiles):
+        cv2.imwrite(os.path.join(outdir,"{}_2bibimage_{}.jpg".format(i, name)),image)
+
+    SWTbib = SWTScrubber.scrub(image)
+    if(writefiles and SWTbib is not None):
+        SWTpath = os.path.join(outdir,"{}_3SWTimage_{}.jpg".format(i, name))
+        cv2.imwrite(SWTpath, (255-(255*SWTbib)))
+        bib_number = ocr.getOcr(SWTpath)
+        print bib_number
+        bib_number = re.sub("[^0-9]", "", bib_number)
+
+    return bib_number
 
 def getSubImage(image,rectangle):
     #in: image, rectangle(x,y,width,height)
