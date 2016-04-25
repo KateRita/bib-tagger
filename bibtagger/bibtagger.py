@@ -48,7 +48,7 @@ def findBibs(image,outdir):
             bibimage = bib.smallest_subimage_containing_bib()
 
             height, width, depth = bibimage.shape
-            best_width=376.0
+            best_width=256.0
             scale = best_width / width
 
             bibimage = cv2.resize(bibimage, None, fx=scale, fy=scale)
