@@ -330,7 +330,7 @@ class SWTScrubber(object):
             right = pair[1]
             widest = max(widths[left], widths[right])
             distance = np.linalg.norm(topleft_pts[left] - topleft_pts[right])
-            if distance < widest * 3:
+            if distance < widest * 1.5:
                 delta_yx = topleft_pts[left] - topleft_pts[right]
                 angle = np.arctan2(delta_yx[0], delta_yx[1])
                 if angle < 0:

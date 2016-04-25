@@ -11,9 +11,6 @@ DEBUG=False
 def find_bib(image):
   width, height, depth = image.shape
 
-  edges = cv2.Canny(image,175,200)
-  #cv2.imwrite("edges.jpg", edges)
-
   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
   #gray = cv2.equalizeHist(gray)
   blurred = cv2.GaussianBlur(gray,(5,5),0)

@@ -9,5 +9,5 @@ def getOcr(filename):
     #return image_to_string(Image.open(filename),config="-psm 6") #5
     #return image_to_string(Image.open(filename)) #3
     #return image_to_string(Image.open(filename),config="-psm 7") #5
-    return image_to_string(Image.open(filename),config="-psm 7 digits") #4
+    return image_to_string(Image.open(filename),config="-psm 8 digits") #4
 
