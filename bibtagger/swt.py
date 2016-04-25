@@ -98,6 +98,11 @@ class SWTScrubber(object):
                         if cur_x != prev_x or cur_y != prev_y:
                             # we have moved to the next pixel!
                             try:
+                                # Detect if we have just "stepped through" a line on the diagonal
+                                if (cur_x != prev_x and cur_y != prev_y):
+                                    if edges[cur_y, prev_x] > 0 and edges[prev_y, cur_x] > 0:
+                                        break
+
                                 if edges[cur_y, cur_x] > 0:
                                     # found edge,
                                     ray.append((cur_x, cur_y))
@@ -271,6 +276,9 @@ class SWTScrubber(object):
                 continue
 
             if width / height > 10 or height / width > 10:
+                continue
+
+            if float(width) / height > 3.0:
                 continue
 
             diameter = math.sqrt(width * width + height * height)
