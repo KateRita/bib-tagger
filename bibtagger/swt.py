@@ -367,7 +367,7 @@ class SWTScrubber(object):
                 chains.append(set([left_b, right_b]))
 
         word_images = []
-        for chain in [c for c in chains if len(c) > 2]:
+        for chain in [c for c in chains if len(c) > 1 and len(c) < 6]:
             for idx in chain:
                 word_images.append(images[idx])
                 # cv2.imwrite('keeper'+ str(idx) +'.jpg', images[idx] * 255)
